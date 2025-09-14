@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
+import PasswordResetRequest from './components/PasswordResetRequest';
+import PasswordResetConfirm from './components/PasswordResetConfirm';
 import './App.css';
 
 // Protected Route component
@@ -29,6 +31,8 @@ function App() {
               } 
             />
             <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/password-reset" element={<PasswordResetRequest />} />
+            <Route path="/password-reset-confirm/:uid/:token" element={<PasswordResetConfirm />} />
           </Routes>
         </div>
       </Router>
