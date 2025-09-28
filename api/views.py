@@ -8,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .serializers import UserSerializer, LoginSerializer
+from .serializers import UserSerializer, LoginSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from .models import CustomUser
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -100,3 +101,62 @@ def get_csrf_token(request):
 @permission_classes([AllowAny])
 def health_check(request):
     return Response({"message": "API is working!"}, status=status.HTTP_200_OK)
+
+
+# api/views.py
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_request(request):
+    try:
+        print("Password reset request data:", request.data)
+        
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            # Always return success message for security (don't reveal if email exists)
+            return Response(
+                {"message": "If the email exists in our system, a password reset link has been sent."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            print("Serializer errors:", serializer.errors)
+            return Response(
+                {"message": "Invalid email format."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+    except Exception as e:
+        print("Error in password_reset_request:", str(e))
+        return Response(
+            {"message": "An error occurred. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_confirm(request):
+    try:
+        print("Password reset confirm data:", request.data)
+        
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Password has been reset successfully. You can now login with your new password."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            print("Serializer errors:", serializer.errors)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+    except Exception as e:
+        print("Error in password_reset_confirm:", str(e))
+        return Response(
+            {"message": "An error occurred. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
