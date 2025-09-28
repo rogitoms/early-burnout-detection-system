@@ -5,6 +5,7 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django_otp.plugins.otp_email.models import EmailDevice
 
 class CustomUserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -42,6 +43,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    is_2fa_enabled = models.BooleanField(default=False)
+    otp_secret = models.CharField(max_length=16, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -50,3 +53,21 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    def enable_2fa(self):
+        """Enable 2FA for this user"""
+        self.is_2fa_enabled = True
+        self.save()
+        
+    def disable_2fa(self):
+        """Disable 2FA for this user"""
+        self.is_2fa_enabled = False
+        self.save()
+        
+    def create_email_device(self):
+        """Create or get email device for 2FA"""
+        device, created = EmailDevice.objects.get_or_create(
+            user=self,
+            defaults={'name': 'Email Device', 'confirmed': True}
+        )
+        return device
