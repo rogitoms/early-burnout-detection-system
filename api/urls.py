@@ -15,4 +15,6 @@ urlpatterns = [
     path('2fa/toggle/', views.toggle_2fa, name='toggle_2fa'),
     path('2fa/status/', views.check_2fa_status, name='check_2fa_status'),
     path('user/', views.get_current_user, name='get_current_user'),  # Fixed: removed 'api/auth/'
+    path('password-reset/', views.password_reset_request, name='password_reset_request'),
+    path('password-reset-confirm/', views.password_reset_confirm, name='password_reset_confirm'),
 ]

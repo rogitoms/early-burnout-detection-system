@@ -120,6 +120,7 @@ const Login = () => {
         <p className="auth-link">
           <Link to="/signup">Create account</Link> | <Link to="/password-reset">Forgot password?</Link>
         </p>
+  
       </div>
     </div>
   );

@@ -101,6 +101,17 @@ AUTH_USER_MODEL = 'api.CustomUser'
 
 ROOT_URLCONF = 'backend.urls'
 
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # For Gmail, use your provider's SMTP
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'meriesara0000@gmail.com'  # Your email
+EMAIL_HOST_PASSWORD = 'kryn hnru tivv chgx'  # Your app password (NOT your regular password)
+
+# Password reset settings
+PASSWORD_RESET_TIMEOUT = 3600  
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

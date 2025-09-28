@@ -6,6 +6,8 @@ import AuthRouteGuard from './components/AuthRouteGuard';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
+import PasswordResetRequest from './components/PasswordResetRequest';
+import PasswordResetConfirm from './components/PasswordResetConfirm';
 import './App.css';
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
               } 
             />
             <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/password-reset" element={<PasswordResetRequest />} />
+            <Route path="/password-reset-confirm/:uid/:token" element={<PasswordResetConfirm />} />
           </Routes>
         </div>
       </Router>
