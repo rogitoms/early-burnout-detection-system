@@ -24,15 +24,24 @@ from django_otp import devices_for_user
 def signup(request):
     try:
         data = request.data
-        if not data.get('email') or not data.get('password'):
-            return Response({'message': 'Email and password are required!'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate required fields - role is not required, everyone is employee
+        required_fields = ['email', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return Response({
+                    'message': f'{field.title()} is required!'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         if CustomUser.objects.filter(email=data['email']).exists():
             return Response({'message': 'Email already exists!'}, status=status.HTTP_409_CONFLICT)
 
+        # Create user - everyone is an employee by default
         user = CustomUser.objects.create_user(
             email=data['email'],
-            password=data['password']
+            password=data['password'],
+            department=data.get('department', ''),
+            employee_id=data.get('employee_id', '')
         )
         
         # AUTO-ENABLE 2FA FOR NEW USERS
@@ -49,10 +58,14 @@ def signup(request):
         
         # Don't log the user in automatically - they need to verify 2FA first
         return Response({
-            'message': 'User created successfully! 2FA verification required to complete setup.',
+            'message': f'Employee account created successfully! 2FA verification required to complete setup.',
             'user': {
                 'id': user.id,
-                'email': user.email
+                'email': user.email,
+                'role': user.role,
+                'role_display': user.get_role_display(),
+                'department': user.department,
+                'employee_id': user.employee_id,
             },
             'requires_2fa': True
         }, status=status.HTTP_201_CREATED)
@@ -68,14 +81,17 @@ def login_view(request):
         user = CustomUser.objects.filter(email=data['email']).first()
         
         if user and user.check_password(data['password']):
+            print(f"DEBUG: Login attempt - User: {user.email}, Role: {user.role}")
+            
             # Check if 2FA is enabled
             if user.is_2fa_enabled:
                 # Return response indicating 2FA is required
                 return Response(
                     {
-                        "message": "2FA verification required.",
+                        "message": f"2FA verification required for {user.get_role_display()}.",
                         "requires_2fa": True,
-                        "email": user.email
+                        "email": user.email,
+                        "user_role": user.role
                     },
                     status=status.HTTP_200_OK
                 )
@@ -83,10 +99,17 @@ def login_view(request):
                 # Regular login without 2FA
                 login(request, user)
                 return Response({
-                    "message": "Login successful!",
+                    "message": f"Login successful! Welcome, {user.get_role_display()}.",
                     "user": {
                         "id": user.id,
-                        "email": user.email
+                        "email": user.email,
+                        "role": user.role,
+                        "role_display": user.get_role_display(),
+                        "department": user.department,
+                        "employee_id": user.employee_id,
+                        "is_2fa_enabled": user.is_2fa_enabled,
+                        "is_admin": user.is_admin(),
+                        "is_employee": user.is_employee(),
                     },
                     "requires_2fa": False
                 }, status=status.HTTP_200_OK)
@@ -94,12 +117,14 @@ def login_view(request):
             return Response({"message": "Invalid email or password!"}, status=status.HTTP_401_UNAUTHORIZED)
             
     except Exception as e:
-        return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"DEBUG: Login error: {str(e)}")
+        return Response({"message": "An error occurred during login"}, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     try:
-        
+        print(f"DEBUG: Logout - User: {request.user.email}, Role: {request.user.role}")
         logout(request)
         return Response({"message": "Logout successful!"}, status=status.HTTP_200_OK)
     except Exception as e:
@@ -110,10 +135,16 @@ def logout_view(request):
 def protected_test(request):
     try:
         return Response({
-            "message": f"Hello {request.user.email}, you are logged in!",
+            "message": f"Hello {request.user.email}, you are logged in as {request.user.get_role_display()}!",
             "user": {
                 "id": request.user.id,
-                "email": request.user.email
+                "email": request.user.email,
+                "role": request.user.role,
+                "role_display": request.user.get_role_display(),
+                "department": request.user.department,
+                "employee_id": request.user.employee_id,
+                "is_admin": request.user.is_admin(),
+                "is_employee": request.user.is_employee(),
             }
         }, status=status.HTTP_200_OK)
     except Exception as e:
@@ -168,8 +199,7 @@ def two_factor_request(request):
         try:
             # MANUALLY generate a 6-digit token
             token = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-            print(f"DEBUG: Manually generated token: {token}")
-            print(f"DEBUG: Sending to: {email}")
+            print(f"DEBUG: Manually generated token: {token} for {user.get_role_display()}: {email}")
             
             # Store the token in the device
             device.token = token
@@ -177,12 +207,13 @@ def two_factor_request(request):
             device.step = 600  # 10 minute expiration
             device.save()
             
-            # Send custom email
-            subject = 'Your 2FA Verification Code - Burnout Detection System'
+            # Send custom email with role information
+            subject = f'Your 2FA Verification Code - Burnout Detection System ({user.get_role_display()})'
             html_message = f"""
             <html>
                 <body>
                     <h3>Burnout Detection System</h3>
+                    <p>Hello {user.get_role_display()},</p>
                     <p>Your two-factor authentication verification code is:</p>
                     <h2 style="font-size: 24px; letter-spacing: 5px; color: #2563eb;">{token}</h2>
                     <p>This code will expire in 10 minutes.</p>
@@ -194,6 +225,8 @@ def two_factor_request(request):
             """
             plain_message = f"""
             Burnout Detection System
+            
+            Hello {user.get_role_display()},
             
             Your two-factor authentication verification code is: {token}
             
@@ -214,10 +247,10 @@ def two_factor_request(request):
                 fail_silently=False,
             )
             
-            print(f"DEBUG: Email sent successfully to {email} with token: {token}")
+            print(f"DEBUG: Email sent successfully to {user.get_role_display()}: {email} with token: {token}")
             
             return Response(
-                {"message": "2FA verification code sent to your email."},
+                {"message": f"2FA verification code sent to {user.get_role_display()}'s email."},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -254,7 +287,7 @@ def two_factor_verify(request):
     
     try:
         user = CustomUser.objects.get(email=email)
-        print(f"DEBUG: Found user: {user.email}, 2FA enabled: {user.is_2fa_enabled}")
+        print(f"DEBUG: Found user: {user.email}, Role: {user.role}, 2FA enabled: {user.is_2fa_enabled}")
         
         # Get the email device
         devices = devices_for_user(user)
@@ -272,11 +305,11 @@ def two_factor_verify(request):
         
         # Check if token matches
         if hasattr(device, 'token') and device.token == token:
-            print("DEBUG: Token matches! Logging in user...")
+            print(f"DEBUG: Token matches! Logging in {user.get_role_display()}: {user.email}")
             
             # IMPORTANT: Use regular Django login first, then OTP login
             login(request, user)
-            print(f"DEBUG: Regular login successful for {user.email}")
+            print(f"DEBUG: Regular login successful for {user.get_role_display()}: {user.email}")
             
             # Then establish OTP login
             otp_login(request, device)
@@ -294,11 +327,17 @@ def two_factor_verify(request):
             
             return Response(
                 {
-                    "message": "2FA verification successful.",
+                    "message": f"2FA verification successful! Welcome, {user.get_role_display()}.",
                     "user": {
                         "id": user.id,
                         "email": user.email,
-                        "is_2fa_enabled": user.is_2fa_enabled
+                        "role": user.role,
+                        "role_display": user.get_role_display(),
+                        "department": user.department,
+                        "employee_id": user.employee_id,
+                        "is_2fa_enabled": user.is_2fa_enabled,
+                        "is_admin": user.is_admin(),
+                        "is_employee": user.is_employee(),
                     }
                 },
                 status=status.HTTP_200_OK
@@ -337,10 +376,10 @@ def toggle_2fa(request):
     
     if enable:
         request.user.enable_2fa()
-        message = "2FA has been enabled for your account."
+        message = f"2FA has been enabled for your {request.user.get_role_display()} account."
     else:
         request.user.disable_2fa()
-        message = "2FA has been disabled for your account."
+        message = f"2FA has been disabled for your {request.user.get_role_display()} account."
     
     return Response({"message": message}, status=status.HTTP_200_OK)
 
@@ -349,7 +388,11 @@ def toggle_2fa(request):
 def check_2fa_status(request):
     """Check if 2FA is enabled for current user"""
     return Response(
-        {"is_2fa_enabled": request.user.is_2fa_enabled},
+        {
+            "is_2fa_enabled": request.user.is_2fa_enabled,
+            "role": request.user.role,
+            "role_display": request.user.get_role_display()
+        },
         status=status.HTTP_200_OK
     )
 
@@ -379,13 +422,14 @@ def setup_2fa(request):
         # Test sending a code with custom email
         try:
             token = device.generate_token()
-            print(f"DEBUG: Setup 2FA token: {token}")
+            print(f"DEBUG: Setup 2FA token: {token} for {user.get_role_display()}: {user.email}")
             
-            subject = '2FA Setup Complete - Burnout Detection System'
+            subject = f'2FA Setup Complete - Burnout Detection System ({user.get_role_display()})'
             html_message = f"""
             <html>
                 <body>
                     <h3>2FA Setup Complete</h3>
+                    <p>Hello {user.get_role_display()},</p>
                     <p>Two-factor authentication has been enabled for your account.</p>
                     <p>Your test verification code is:</p>
                     <h2 style="font-size: 24px; letter-spacing: 5px; color: #2563eb;">{token}</h2>
@@ -397,6 +441,8 @@ def setup_2fa(request):
             """
             plain_message = f"""
             2FA Setup Complete
+            
+            Hello {user.get_role_display()},
             
             Two-factor authentication has been enabled for your account.
             
@@ -418,7 +464,7 @@ def setup_2fa(request):
             )
             
             return Response(
-                {"message": "2FA has been enabled. A test code has been sent to your email."},
+                {"message": f"2FA has been enabled for your {user.get_role_display()} account. A test code has been sent to your email."},
                 status=status.HTTP_200_OK
             )
             
@@ -443,6 +489,7 @@ def get_current_user(request):
         print(f"DEBUG: User authenticated: {request.user.is_authenticated}")
         print(f"DEBUG: User ID: {getattr(request.user, 'id', 'None')}")
         print(f"DEBUG: User email: {getattr(request.user, 'email', 'None')}")
+        print(f"DEBUG: User role: {getattr(request.user, 'role', 'None')}")
         print(f"DEBUG: Session key: {request.session.session_key}")
         
         if not request.user.is_authenticated:
@@ -454,8 +501,14 @@ def get_current_user(request):
         return Response({
             'id': request.user.id,
             'email': request.user.email,
-            'is_2fa_enabled': request.user.is_2fa_enabled
-            # Add any other user fields you need
+            'role': request.user.role,
+            'role_display': request.user.get_role_display(),
+            'department': request.user.department,
+            'employee_id': request.user.employee_id,
+            'is_2fa_enabled': request.user.is_2fa_enabled,
+            'is_admin': request.user.is_admin(),
+            'is_employee': request.user.is_employee(),
+            'date_joined': request.user.date_joined,
         }, status=status.HTTP_200_OK)
     except Exception as e:
         print(f"DEBUG: Error in get_current_user: {str(e)}")
@@ -463,7 +516,224 @@ def get_current_user(request):
             {"message": f"Error fetching user data: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        # api/views.py
+
+# Admin-only endpoints
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_dashboard(request):
+    """Admin-only dashboard data"""
+    try:
+        if not request.user.is_admin():
+            return Response(
+                {"message": "Access denied. Admin role required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get admin dashboard data
+        total_users = CustomUser.objects.count()
+        total_employees = CustomUser.objects.filter(role='EMPLOYEE').count()
+        total_admins = CustomUser.objects.filter(role='ADMIN').count()
+        
+        return Response({
+            "message": f"Welcome to Admin Dashboard, {request.user.email}",
+            "stats": {
+                "total_users": total_users,
+                "total_employees": total_employees,
+                "total_admins": total_admins,
+            },
+            "user": {
+                "id": request.user.id,
+                "email": request.user.email,
+                "role": request.user.role,
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {"message": f"Error loading admin dashboard: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_get_employees(request):
+    """Get all employees for admin management"""
+    try:
+        if not request.user.is_admin():
+            return Response(
+                {"message": "Access denied. Admin role required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        employees = CustomUser.objects.filter(role='EMPLOYEE').order_by('-date_joined')
+        employee_data = []
+        
+        for emp in employees:
+            employee_data.append({
+                'id': emp.id,
+                'email': emp.email,
+                'department': emp.department,
+                'employee_id': emp.employee_id,
+                'is_2fa_enabled': emp.is_2fa_enabled,
+                'is_active': emp.is_active,
+                'date_joined': emp.date_joined.strftime('%Y-%m-%d %H:%M'),
+                'last_login': emp.last_login.strftime('%Y-%m-%d %H:%M') if emp.last_login else 'Never'
+            })
+        
+        return Response({
+            "employees": employee_data,
+            "total": len(employee_data)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {"message": f"Error fetching employees: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def admin_create_employee(request):
+    """Create new employee account (admin only)"""
+    try:
+        if not request.user.is_admin():
+            return Response(
+                {"message": "Access denied. Admin role required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        data = request.data
+        
+        # Validate required fields
+        if not data.get('email') or not data.get('password'):
+            return Response({
+                'message': 'Email and password are required!'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if CustomUser.objects.filter(email=data['email']).exists():
+            return Response({'message': 'Email already exists!'}, status=status.HTTP_409_CONFLICT)
+
+        # Create employee
+        employee = CustomUser.objects.create_user(
+            email=data['email'],
+            password=data['password'],
+            department=data.get('department', ''),
+            employee_id=data.get('employee_id', '')
+        )
+        
+        # Enable 2FA by default
+        employee.enable_2fa()
+        
+        # Create email device
+        EmailDevice.objects.get_or_create(
+            user=employee,
+            defaults={
+                'name': 'Email Device',
+                'confirmed': True,
+            }
+        )
+        
+        return Response({
+            'message': f'Employee {employee.email} created successfully!',
+            'employee': {
+                'id': employee.id,
+                'email': employee.email,
+                'department': employee.department,
+                'employee_id': employee.employee_id,
+                'is_2fa_enabled': employee.is_2fa_enabled,
+                'date_joined': employee.date_joined.strftime('%Y-%m-%d %H:%M')
+            }
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        return Response({'message': f'Error creating employee: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def admin_update_employee(request, employee_id):
+    """Update employee information (admin only)"""
+    try:
+        if not request.user.is_admin():
+            return Response(
+                {"message": "Access denied. Admin role required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            employee = CustomUser.objects.get(id=employee_id, role='EMPLOYEE')
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"message": "Employee not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        data = request.data
+        
+        # Update fields
+        if 'email' in data and data['email'] != employee.email:
+            if CustomUser.objects.filter(email=data['email']).exclude(id=employee_id).exists():
+                return Response({'message': 'Email already exists!'}, status=status.HTTP_409_CONFLICT)
+            employee.email = data['email']
+        
+        if 'department' in data:
+            employee.department = data['department']
+        
+        if 'employee_id' in data:
+            employee.employee_id = data['employee_id']
+        
+        if 'is_active' in data:
+            employee.is_active = data['is_active']
+        
+        if 'password' in data and data['password']:
+            employee.set_password(data['password'])
+        
+        employee.save()
+        
+        return Response({
+            'message': f'Employee {employee.email} updated successfully!',
+            'employee': {
+                'id': employee.id,
+                'email': employee.email,
+                'department': employee.department,
+                'employee_id': employee.employee_id,
+                'is_2fa_enabled': employee.is_2fa_enabled,
+                'is_active': employee.is_active,
+                'date_joined': employee.date_joined.strftime('%Y-%m-%d %H:%M')
+            }
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({'message': f'Error updating employee: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def admin_delete_employee(request, employee_id):
+    """Delete employee account (admin only)"""
+    try:
+        if not request.user.is_admin():
+            return Response(
+                {"message": "Access denied. Admin role required."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            employee = CustomUser.objects.get(id=employee_id, role='EMPLOYEE')
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"message": "Employee not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        employee_email = employee.email
+        employee.delete()
+        
+        return Response({
+            'message': f'Employee {employee_email} deleted successfully!'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({'message': f'Error deleting employee: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_request(request):

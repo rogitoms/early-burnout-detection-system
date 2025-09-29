@@ -17,4 +17,11 @@ urlpatterns = [
     path('user/', views.get_current_user, name='get_current_user'),  # Fixed: removed 'api/auth/'
     path('password-reset/', views.password_reset_request, name='password_reset_request'),
     path('password-reset-confirm/', views.password_reset_confirm, name='password_reset_confirm'),
+
+ # Admin endpoints
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/employees/', views.admin_get_employees, name='admin_get_employees'),
+    path('admin/employees/create/', views.admin_create_employee, name='admin_create_employee'),
+    path('admin/employees/<int:employee_id>/update/', views.admin_update_employee, name='admin_update_employee'),
+    path('admin/employees/<int:employee_id>/delete/', views.admin_delete_employee, name='admin_delete_employee'),
 ]
