@@ -8,6 +8,8 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [department, setDepartment] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,22 +30,29 @@ const Signup = () => {
     setMessage('');
 
     try {
-      console.log('Sending signup request...');
+      console.log('Sending employee signup request...');
       
+      const signupData = {
+        email,
+        password,
+        department,
+        employee_id: employeeId
+      };
+
       const response = await fetch('http://localhost:8000/api/auth/signup/', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(signupData),
       });
 
       const data = await response.json();
       console.log('Signup response:', data);
 
       if (response.ok) {
-        console.log('Signup successful, 2FA required for new user');
+        console.log('Employee signup successful, 2FA required for new user');
         
         // Logout the user first (since signup auto-logs them in)
         try {
@@ -56,13 +65,13 @@ const Signup = () => {
           console.error('Logout after signup failed:', logoutError);
         }
         
-        setMessage('Account created successfully! 2FA verification is required to complete setup.');
+        setMessage('Employee account created successfully! Check your email for the 2FA verification code.');
         setRequires2FA(true);
         setTwoFAEmail(email);
         
         // Request 2FA code automatically for the new user
         try {
-          console.log('Requesting 2FA code for new user:', email);
+          console.log('Requesting 2FA code for new employee:', email);
           const twoFAResponse = await fetch('http://localhost:8000/api/auth/2fa/request/', {
             method: 'POST',
             credentials: 'include',
@@ -76,7 +85,7 @@ const Signup = () => {
           console.log('2FA request response:', twoFAData);
           
           if (twoFAResponse.ok) {
-            setMessage('Account created! Check your email for the 2FA verification code.');
+            setMessage('Employee account created! Check your email for the 2FA verification code.');
           }
           
         } catch (twoFAError) {
@@ -111,19 +120,22 @@ const Signup = () => {
   return (
     <div className="auth-container">
       <div className="auth-form">
-        <h2>Create Account</h2>
+        <h2>Create Employee Account</h2>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+          All new accounts are created as Employee accounts. Contact your administrator if you need different access.
+        </p>
         {message && <div className="success-message">{message}</div>}
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit} autoComplete="off">
           <div className="form-group">
-            <label>Email:</label>
+            <label>Work Email:</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="name@gmail.com"
+              placeholder="name@company.com"
               autoComplete="new-email"
               name="email"
             />
@@ -136,7 +148,7 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Create a password"
+              placeholder="Create a secure password"
               autoComplete="new-password"
               name="password"
             />
@@ -155,8 +167,32 @@ const Signup = () => {
             />
           </div>
 
+          <div className="form-group">
+            <label>Department (Optional):</label>
+            <input
+              type="text"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g., Engineering, Marketing, HR"
+              autoComplete="organization"
+              name="department"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Employee ID (Optional):</label>
+            <input
+              type="text"
+              value={employeeId}
+              onChange={(e) => setEmployeeId(e.target.value)}
+              placeholder="e.g., EMP-2024-001"
+              autoComplete="off"
+              name="employeeId"
+            />
+          </div>
+
           <button type="submit" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Creating Employee Account...' : 'Create Employee Account'}
           </button>
         </form>
 

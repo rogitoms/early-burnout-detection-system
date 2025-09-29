@@ -2,7 +2,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import CustomUser
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -10,37 +9,56 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.conf import settings
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('id', 'email') # Don't expose the password
+        fields = ['id', 'email', 'role', 'department', 'employee_id', 'is_2fa_enabled', 'date_joined']
+        read_only_fields = ['id', 'date_joined']
+
+class SignupSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'confirm_password', 'role', 'department', 'employee_id']
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError("Passwords don't match")
+        return attrs
+    
+    def validate_role(self, value):
+        if value not in ['EMPLOYEE', 'ADMIN']:
+            raise serializers.ValidationError("Role must be either 'EMPLOYEE' or 'ADMIN'")
+        return value
+    
+    def create(self, validated_data):
+        validated_data.pop('confirm_password')  # Remove confirm_password
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField()
-
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
-
+    password = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        
         if email and password:
-            user = authenticate(request=self.context.get('request'), email=email, password=password)
+            user = authenticate(username=email, password=password)
             if not user:
-                raise serializers.ValidationError('Invalid email or password.', code='authorization')
+                raise serializers.ValidationError('Invalid email or password')
+            if not user.is_active:
+                raise serializers.ValidationError('User account is disabled')
+            attrs['user'] = user
         else:
-            raise serializers.ValidationError('Must include "email" and "password".', code='authorization')
-
-        data['user'] = user
-        return data
-
-# api/serializers.py
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
+            raise serializers.ValidationError('Must include email and password')
+        
+        return attrs
 
 User = get_user_model()
 
