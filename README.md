@@ -1,35 +1,39 @@
-```markdown
 # Burnout Detection System
 
 A comprehensive full-stack application for detecting and managing workplace burnout through AI-powered assessments and personalized recommendations.
 
-## 🌟 Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![React](https://img.shields.io/badge/react-18+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
-### 🔐 Authentication & Security
+## Features
+
+### Authentication & Security
 - **Two-Factor Authentication (2FA)** with email verification
-- Role-based access control (Admin/Employee)
-- Secure session management
-- Password reset functionality
+- **Role-based access control** (Admin/Employee)
+- **Secure session management**
+- **Password reset functionality**
 
-### 🤖 AI-Powered Assessment
+### AI-Powered Assessment
 - **Machine Learning Model** using DistilBERT for burnout prediction
 - **Conversational Chatbot** for natural assessment experience
 - **Personalized Recommendations** via Groq LLM API
-- Real-time burnout scoring and analysis
+- **Real-time burnout scoring** and analysis
 
-### 👥 User Management
+### User Management
 - **Admin Dashboard** for employee management
-- Employee role assignment and tracking
-- Assessment history and progress monitoring
-- Department and employee ID management
+- **Employee role assignment** and tracking
+- **Assessment history** and progress monitoring
+- **Department and employee ID** management
 
-### 💬 Smart Chatbot
-- Progressive question flow (6 key questions)
-- Context-aware responses
-- Session persistence
-- Assessment completion tracking
+### Smart Chatbot
+- **Progressive question flow** (6 key questions)
+- **Context-aware responses**
+- **Session persistence**
+- **Assessment completion tracking**
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Backend
 - **Django** with Django REST Framework
@@ -48,9 +52,9 @@ A comprehensive full-stack application for detecting and managing workplace burn
 - **DistilBERT** base model for text classification
 - **Custom neural network** architecture
 - **Groq API** (Llama 3.1) for recommendations
-- Real-time text processing and analysis
+- **Real-time text processing** and analysis
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
@@ -58,6 +62,7 @@ A comprehensive full-stack application for detecting and managing workplace burn
 - Groq API key
 
 ### Backend Setup
+
 ```bash
 # Clone repository
 git clone <repository-url>
@@ -74,6 +79,7 @@ python manage.py runserver
 ```
 
 ### Frontend Setup
+
 ```bash
 # Navigate to frontend
 cd frontend
@@ -86,31 +92,107 @@ npm run dev
 ```
 
 ### Environment Variables
+
 Create `.env` file in backend directory:
+
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 EMAIL_HOST_PASSWORD=your_email_app_password
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 burnout-detection-system/
-├── backend/                 # Django backend
-│   ├── api/                # Main app with auth and user management
-│   ├── chatbot/            # Chatbot and assessment logic
-│   ├── ml_model/           # Machine learning components
-│   └── backend/            # Project settings
-├── frontend/               # React frontend
+├── backend/                              
+│   ├── api/                              
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── two_factor_serializers.py
+│   │   ├── views.py
+│   │   ├── urls.py
+│   │   ├── tests.py
+│   │   └── migrations/
+│
+│   ├── chatbot/                          # Chatbot App
+│   │   ├── __init__.py                   # Added (clean version)
+│   │   ├── admin.py                      # Added (clean version)
+│   │   ├── apps.py
+│   │   ├── conversation_flow.py          # Uploaded file
+│   │   ├── models.py                     # Uploaded file
+│   │   ├── serializers.py                # Uploaded file
+│   │   ├── views.py                      # Uploaded file
+│   │   ├── urls.py                       # Uploaded file
+│   │   └── tests.py
+│
+│   ├── ml_model/
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── model_architecture.py
+│   │   ├── model_service.py
+│   │   ├── data_processing.py
+│   │   ├── prediction_utils.py
+│   │   ├── training_pipeline.py
+│   │   ├── llm_api_recommender.py
+│   │   ├── assessment_logic.py
+│   │   └── ultimate_burnout_model.pth
+│   │
+│   ├── backend/
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   │   ├── asgi.py
+│   │   └── middleware.py
+│   │
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── db.sqlite3
+│
+├── frontend/
+│   ├── public/
+│   │   └── index.html
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── contexts/       # React contexts (Auth)
-│   │   ├── services/       # API services
-│   │   └── App.jsx         # Main app component
-└── README.md
+│   │   ├── components/
+│   │   │   ├── App.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Dashboard.css
+│   │   │   ├── Login.jsx
+│   │   │   ├── Signup.jsx
+│   │   │   ├── TwoFactorVerify.jsx
+│   │   │   ├── PasswordResetRequest.jsx
+│   │   │   ├── PasswordResetConfirm.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── AuthRouteGuard.jsx
+│   │   │   ├── AdminEmployeeManagement.jsx
+│   │   │   └── chatbot/
+│   │   │       ├──Chatbot.css
+│   │   │       └── Chatbot.jsx
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   └── chatbot.js
+│   │   ├── hooks/
+│   │   │   └── useChatbot.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── package.json
+│   ├── vite.config.js
+│   └── yarn.lock / package-lock.json
+│
+├── .gitignore
+├── README.md
+└── manage.py
+
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/signup/` - User registration
@@ -130,7 +212,7 @@ burnout-detection-system/
 - `PUT /api/auth/admin/employees/{id}/update/` - Update employee
 - `DELETE /api/auth/admin/employees/{id}/delete/` - Delete employee
 
-## 🧠 ML Model Details
+## ML Model Details
 
 ### Architecture
 - **Base Model**: DistilBERT (uncased)
@@ -143,7 +225,7 @@ burnout-detection-system/
 - Advanced dropout for regularization
 - Optimized for burnout-specific language patterns
 
-## 👥 User Roles
+## User Roles
 
 ### Employee
 - Complete burnout assessments
@@ -157,7 +239,7 @@ burnout-detection-system/
 - Monitor assessment completion
 - Generate reports
 
-## 🔒 Security Features
+## Security Features
 
 - **2FA Enforcement**: All users require email verification
 - **Session Management**: Secure cookie-based sessions
@@ -165,7 +247,7 @@ burnout-detection-system/
 - **CORS Configuration**: Controlled cross-origin requests
 - **Password Validation**: Strong password requirements
 
-## 📊 Assessment Flow
+## Assessment Flow
 
 1. **Welcome** → Introduction and consent
 2. **Q1-6** → Progressive questions about work experience
@@ -173,7 +255,7 @@ burnout-detection-system/
 4. **LLM Recommendations** → Personalized advice generation
 5. **Results** → Comprehensive report with actionable insights
 
-## 🎨 UI/UX Features
+## UI/UX Features
 
 - **Responsive Design**: Mobile-first approach
 - **Dark/Light Mode**: CSS variable support
@@ -181,38 +263,11 @@ burnout-detection-system/
 - **Loading States**: Smooth user experience
 - **Error Handling**: User-friendly error messages
 
-## 🚀 Deployment
-
-### Backend (Production)
-```bash
-# Collect static files
-python manage.py collectstatic
-
-# Use production WSGI server
-gunicorn backend.wsgi:application
-```
-
-### Frontend (Production)
-```bash
-# Build optimized version
-npm run build
-
-# Serve with nginx or similar
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
+## Support
 
 For support and questions:
 - Check existing issues on GitHub
@@ -222,4 +277,3 @@ For support and questions:
 ---
 
 **Built with ❤️ for better workplace wellbeing**
-```I NEED FORMAT OF READ ME
