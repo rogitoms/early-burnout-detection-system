@@ -2,6 +2,7 @@ import os
 import torch
 import logging
 from transformers import DistilBertTokenizer
+<<<<<<< HEAD
 import warnings
 
 # Suppress all warnings at the top
@@ -9,6 +10,11 @@ warnings.filterwarnings("ignore")
 os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = '1'
 
 from .model_architecture import UltimateBurnoutClassifier
+=======
+
+from .model_architecture import UltimateBurnoutClassifier
+from .prediction_utils import predict_burnout_silent
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +27,7 @@ class BurnoutDetectionService:
         self.load_model()
     
     def load_model(self):
+<<<<<<< HEAD
         try:
             # Suppress warnings during tokenizer loading
             with warnings.catch_warnings():
@@ -93,6 +100,44 @@ class BurnoutDetectionService:
         except Exception as e:
             logger.error(f"Prediction error: {e}")
             return {"error": str(e)}
+=======
+        """Load the trained model"""
+        try:
+            self.tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+            self.model = UltimateBurnoutClassifier()
+            
+            if os.path.exists(self.model_path):
+                self.model.load_state_dict(
+                    torch.load(self.model_path, map_location=self.device), 
+                    strict=False
+                )
+                self.model.to(self.device)
+                self.model.eval()
+                logger.info("Model loaded successfully from %s", self.model_path)
+            else:
+                logger.warning("Model file not found at %s", self.model_path)
+                
+        except Exception as e:
+            logger.error("Error loading model: %s", e)
+    
+    def predict_burnout(self, text):
+        """Predict burnout level for given text"""
+        if not self.model or not self.tokenizer:
+            return {"error": "Model not loaded properly"}
+        
+        try:
+            # Use the silent prediction function
+            result = predict_burnout_silent(text, self.model_path)
+            result['model_loaded'] = True
+            return result
+            
+        except Exception as e:
+            logger.error("Prediction error: %s", e)
+            return {
+                "error": str(e),
+                "model_loaded": self.model is not None
+            }
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
 
 # Global instance
 burnout_service = BurnoutDetectionService()

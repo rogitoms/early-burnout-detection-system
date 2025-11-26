@@ -5,5 +5,8 @@ numpy>=1.21.0
 scikit-learn>=1.0.0
 matplotlib>=3.5.0
 seaborn>=0.11.0
+<<<<<<< HEAD
 huggingface-hub>=0.25.2
+=======
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
 tqdm>=4.62.0

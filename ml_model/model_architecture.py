@@ -1,5 +1,6 @@
 import torch.nn as nn
 from transformers import DistilBertForSequenceClassification
+<<<<<<< HEAD
 import warnings
 import logging
 
@@ -19,6 +20,19 @@ class UltimateBurnoutClassifier(nn.Module):
                 num_labels=1,
                 ignore_mismatched_sizes=True
             )
+=======
+import torch
+
+class UltimateBurnoutClassifier(nn.Module):
+    """Ultimate burnout classifier with advanced architecture"""
+    def __init__(self):
+        super().__init__()
+        self.encoder = DistilBertForSequenceClassification.from_pretrained(
+            'distilbert-base-uncased',
+            num_labels=1,
+            ignore_mismatched_sizes=True
+        )
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
         
         # Strategic freezing
         for name, param in self.encoder.named_parameters():
@@ -48,4 +62,29 @@ class UltimateBurnoutClassifier(nn.Module):
 
     def forward(self, input_ids, attention_mask):
         outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+<<<<<<< HEAD
         return outputs.logits.squeeze()
+=======
+        return outputs.logits.squeeze()
+
+class FocalLoss(nn.Module):
+    """Focal loss for handling class imbalance"""
+    def __init__(self, alpha=1, gamma=2, reduction='mean'):
+        super().__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.reduction = reduction
+        self.mse = nn.MSELoss(reduction='none')
+
+    def forward(self, inputs, targets):
+        mse_loss = self.mse(inputs, targets)
+        pt = torch.exp(-mse_loss)
+        focal_loss = self.alpha * (1-pt)**self.gamma * mse_loss
+
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47

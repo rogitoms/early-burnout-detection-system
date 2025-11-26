@@ -120,8 +120,15 @@ const Signup = () => {
   return (
     <div className="auth-container">
       <div className="auth-form">
+<<<<<<< HEAD
         <h2>Create Account</h2>
       
+=======
+        <h2>Create Employee Account</h2>
+        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+          All new accounts are created as Employee accounts. Contact your administrator if you need different access.
+        </p>
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
         {message && <div className="success-message">{message}</div>}
         {error && <div className="error-message">{error}</div>}
         
@@ -165,6 +172,33 @@ const Signup = () => {
             />
           </div>
 
+<<<<<<< HEAD
+=======
+          <div className="form-group">
+            <label>Department (Optional):</label>
+            <input
+              type="text"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              placeholder="e.g., Engineering, Marketing, HR"
+              autoComplete="organization"
+              name="department"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Employee ID (Optional):</label>
+            <input
+              type="text"
+              value={employeeId}
+              onChange={(e) => setEmployeeId(e.target.value)}
+              placeholder="e.g., EMP-2024-001"
+              autoComplete="off"
+              name="employeeId"
+            />
+          </div>
+
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
           <button type="submit" disabled={loading}>
             {loading ? 'Creating Employee Account...' : 'Create Employee Account'}
           </button>
