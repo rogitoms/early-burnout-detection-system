@@ -92,7 +92,6 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
-<<<<<<< HEAD
 
 # Hugging Face LLM recommendation service (free)
 HF_API_TOKEN=hf_your_free_token      # create at https://huggingface.co/settings/tokens
@@ -101,8 +100,6 @@ HF_TEMPERATURE=0.4
 HF_MAX_NEW_TOKENS=650
 HF_TIMEOUT=60
 HF_PROVIDER=hf-inference
-=======
->>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
 ```
 
 #### Frontend (.env)
@@ -129,7 +126,6 @@ POST /api/auth/reset-confirm/     # Password reset confirmation
 GET  /api/user/profile/           # User profile
 ```
 
-<<<<<<< HEAD
 ### LLM-Powered Recommendations (Free)
 When a chat assessment is completed, the backend now:
 - Aggregates answers to the five burnout questions.
@@ -142,8 +138,6 @@ To test locally:
 2. Install backend deps: `pip install -r requirements.txt`.
 3. Run the Django server and complete a chat assessment—the response includes `llm_recommendations` sourced from the Hugging Face model.
 
-=======
->>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
 ## Project Structure
 
 ```
