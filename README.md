@@ -1,85 +1,95 @@
-# Early Burnout Detection Chatbot
+# Burnout Detection System
 
-A full-stack web application with user authentication system, built with Django backend and React frontend, paving the way for an AI-powered burnout detection chatbot.
+A comprehensive full-stack application for detecting and managing workplace burnout through AI-powered assessments and personalized recommendations.
 
-##  Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![React](https://img.shields.io/badge/react-18+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 
-### Implemented Features
-- **User Authentication System**
-  - Secure user registration and login
-  - Multi-Factor Authentication (MFA/2FA)
-  - Gmail OTP (One-Time Password) delivery
-  - Password reset functionality
-  - Session management
+## Features
 
-### Planned Features
-- **AI Chatbot Integration** - Burnout detection through conversational AI
-- **Mental Health Assessment** - Automated burnout risk evaluation
-- **Personalized Recommendations** - Customized well-being suggestions
+### Authentication & Security
+- **Two-Factor Authentication (2FA)** with email verification
+- **Role-based access control** (Admin/Employee)
+- **Secure session management**
+- **Password reset functionality**
 
-## 🛠 Tech Stack
+### AI-Powered Assessment
+- **Machine Learning Model** using DistilBERT for burnout prediction
+- **Conversational Chatbot** for natural assessment experience
+- **Personalized Recommendations** via Groq LLM API
+- **Real-time burnout scoring** and analysis
+
+### User Management
+- **Admin Dashboard** for employee management
+- **Employee role assignment** and tracking
+- **Assessment history** and progress monitoring
+- **Department and employee ID** management
+
+### Smart Chatbot
+- **Progressive question flow** (6 key questions)
+- **Context-aware responses**
+- **Session persistence**
+- **Assessment completion tracking**
+
+## Tech Stack
 
 ### Backend
-- **Python** 
-- **Django** - Web framework
-- **Django REST Framework** - API development
-- **PostgreSQL** - Database (default, configurable)
-- **JWT Authentication** - Secure token-based auth
+- **Django** with Django REST Framework
+- **Django-OTP** for 2FA
+- **SQLite** database (production-ready PostgreSQL compatible)
+- **Transformers** (Hugging Face) for ML model
+- **PyTorch** for model inference
 
 ### Frontend
-- **React** - User interface
-- **React Router** - Navigation
-- **Axios** - API communication
-- **Context API** - State management
+- **React** with modern hooks
+- **React Router** for navigation
+- **Axios** for API communication
+- **CSS3** with custom design system
 
-### Services
-- **Gmail API** - OTP delivery
-- **2FA/MFA** - Multi-factor authentication
+### AI/ML
+- **DistilBERT** base model for text classification
+- **Custom neural network** architecture
+- **Groq API** (Llama 3.1) for recommendations
+- **Real-time text processing** and analysis
 
-## Installation
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- Node.js 14+
-- PostgreSQL (optional)
+- Node.js 16+
+- Groq API key
 
 ### Backend Setup
+
 ```bash
 # Clone repository
-git clone https://github.com/rogitoms/early-burnout-detection-system.git
-cd early-burnout-detection-system
+git clone <repository-url>
+cd backend
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 
-# Configure your database and Gmail credentials in .env
-
-# Database setup
+# Run migrations
 python manage.py migrate
-python manage.py createsuperuser
 
-# Run development server
+# Start development server
 python manage.py runserver
 ```
 
 ### Frontend Setup
+
 ```bash
+# Navigate to frontend
 cd frontend
 
 # Install dependencies
 npm install
 
-# Configure API endpoints in .env
-
 # Start development server
-npm start
+npm run dev
 ```
-
-## Configuration
 
 ### Environment Variables
 
@@ -102,28 +112,9 @@ HF_TIMEOUT=60
 HF_PROVIDER=hf-inference
 ```
 
-#### Frontend (.env)
 ```env
-REACT_APP_API_URL=http://localhost:8000/api
-REACT_APP_WS_URL=ws://localhost:8000/ws
-```
-
-## Usage
-
-### Authentication Flow
-1. **Registration**: Users create account with email verification
-2. **Login**: Secure login with credentials
-3. **MFA/2FA**: OTP sent via Gmail for additional security
-4. **Password Reset**: Secure password recovery process
-
-### API Endpoints
-```http
-POST /api/auth/register/          # User registration
-POST /api/auth/login/             # User login
-POST /api/auth/verify-otp/        # MFA verification
-POST /api/auth/reset-password/    # Password reset request
-POST /api/auth/reset-confirm/     # Password reset confirmation
-GET  /api/user/profile/           # User profile
+GROQ_API_KEY=your_groq_api_key_here
+EMAIL_HOST_PASSWORD=your_email_app_password
 ```
 
 ### LLM-Powered Recommendations (Free)
@@ -141,59 +132,177 @@ To test locally:
 ## Project Structure
 
 ```
-early-burnout-detection-system/
-├── backend/                 # Django project
-│   ├── __pycache__/        # Python cache
-│   ├── middleware.py       # Custom middleware
-│   ├── settings.py         # Django settings
-│   ├── urls.py            # URL routing
-│   ├── asgi.py            # ASGI config
-│   └── wsgi.py            # WSGI config
-├── frontend/               # React Vite application
+burnout-detection-system/
+├── backend/                              
+│   ├── api/                              
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── two_factor_serializers.py
+│   │   ├── views.py
+│   │   ├── urls.py
+│   │   ├── tests.py
+│   │   └── migrations/
+│
+│   ├── chatbot/                          # Chatbot App
+│   │   ├── __init__.py                   # Added (clean version)
+│   │   ├── admin.py                      # Added (clean version)
+│   │   ├── apps.py
+│   │   ├── conversation_flow.py          # Uploaded file
+│   │   ├── models.py                     # Uploaded file
+│   │   ├── serializers.py                # Uploaded file
+│   │   ├── views.py                      # Uploaded file
+│   │   ├── urls.py                       # Uploaded file
+│   │   └── tests.py
+│
+│   ├── ml_model/
+│   │   ├── __init__.py
+│   │   ├── apps.py
+│   │   ├── model_architecture.py
+│   │   ├── model_service.py
+│   │   ├── data_processing.py
+│   │   ├── prediction_utils.py
+│   │   ├── training_pipeline.py
+│   │   ├── llm_api_recommender.py
+│   │   ├── assessment_logic.py
+│   │   └── ultimate_burnout_model.pth
+│   │
+│   ├── backend/
+│   │   ├── __init__.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── wsgi.py
+│   │   ├── asgi.py
+│   │   └── middleware.py
+│   │
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── db.sqlite3
+│
+├── frontend/
 │   ├── public/
-│   │   └── vite.svg       # Vite assets
+│   │   └── index.html
 │   ├── src/
-│   │   ├── assets/        # Static assets
-│   │   ├── components/    # React components
-│   │   ├── contexts/      # React contexts (Auth, etc.)
-│   │   ├── App.css        # Main styles
-│   │   ├── App.jsx        # Main App component
-│   │   ├── index.css      # Global styles
-│   │   └── main.jsx       # Entry point
-│   ├── index.html         # HTML template
-│   ├── package.json       # Dependencies
-│   ├── vite.config.js     # Vite configuration
-│   └── eslint.config.js   # ESLint rules
-├── venv/                  # Python virtual environment
-├── .gitignore            # Git ignore rules
-└── README.md             # Project documentation
+│   │   ├── components/
+│   │   │   ├── App.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Dashboard.css
+│   │   │   ├── Login.jsx
+│   │   │   ├── Signup.jsx
+│   │   │   ├── TwoFactorVerify.jsx
+│   │   │   ├── PasswordResetRequest.jsx
+│   │   │   ├── PasswordResetConfirm.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── AuthRouteGuard.jsx
+│   │   │   ├── AdminEmployeeManagement.jsx
+│   │   │   └── chatbot/
+│   │   │       ├──Chatbot.css
+│   │   │       └── Chatbot.jsx
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── auth.js
+│   │   │   └── chatbot.js
+│   │   ├── hooks/
+│   │   │   └── useChatbot.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── package.json
+│   ├── vite.config.js
+│   └── yarn.lock / package-lock.json
+│
+├── .gitignore
+├── README.md
+└── manage.py
+
 ```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/signup/` - User registration
+- `POST /api/auth/login/` - User login
+- `POST /api/auth/logout/` - User logout
+- `POST /api/auth/2fa/verify/` - 2FA verification
+
+### Chatbot & Assessment
+- `POST /chatbot/start-session/` - Start new assessment
+- `POST /chatbot/submit-answer/` - Submit answer
+- `GET /chatbot/history/` - Get assessment history
+- `DELETE /chatbot/session/{id}/delete/` - Delete session
+
+### Admin
+- `GET /api/auth/admin/employees/` - List employees
+- `POST /api/auth/admin/employees/create/` - Create employee
+- `PUT /api/auth/admin/employees/{id}/update/` - Update employee
+- `DELETE /api/auth/admin/employees/{id}/delete/` - Delete employee
+
+## ML Model Details
+
+### Architecture
+- **Base Model**: DistilBERT (uncased)
+- **Custom Head**: Multi-layer perceptron with GELU activation
+- **Output**: Sigmoid activation for burnout probability (0-1)
+
+### Training Features
+- Text preprocessing and cleaning
+- Strategic layer freezing for efficiency
+- Advanced dropout for regularization
+- Optimized for burnout-specific language patterns
+
+## User Roles
+
+### Employee
+- Complete burnout assessments
+- View personal assessment history
+- Receive personalized recommendations
+- Update profile information
+
+### Admin
+- Manage employee accounts
+- View system analytics
+- Monitor assessment completion
+- Generate reports
 
 ## Security Features
 
-- **Password Hashing**: BCrypt password encryption
-- **JWT Tokens**: Secure authentication tokens
-- **MFA/2FA**: Two-factor authentication via Gmail OTP
-- **CORS Protection**: Configured CORS policies
-- **SQL Injection Protection**: Django ORM security
-- **XSS Protection**: Built-in Django security
+- **2FA Enforcement**: All users require email verification
+- **Session Management**: Secure cookie-based sessions
+- **CSRF Protection**: Cross-site request forgery protection
+- **CORS Configuration**: Controlled cross-origin requests
+- **Password Validation**: Strong password requirements
 
-##  Development Roadmap
+## Assessment Flow
 
-### Phase 1: Complete
-- [x] User authentication system
-- [x] MFA/2FA with Gmail OTP
-- [x] Password reset functionality
-- [x] React frontend integration
+1. **Welcome** → Introduction and consent
+2. **Q1-6** → Progressive questions about work experience
+3. **ML Analysis** → Real-time burnout scoring
+4. **LLM Recommendations** → Personalized advice generation
+5. **Results** → Comprehensive report with actionable insights
 
-### Phase 2: In Progress
-- [ ] Chatbot interface components
-- [ ] Burnout assessment algorithms
-- [ ] Conversation data models
+## UI/UX Features
 
-### Phase 3: Planned
-- [ ] AI/ML integration for burnout detection
-- [ ] Advanced analytics dashboard
-- [ ] Mobile application
-- [ ] Admin reporting tools
+- **Responsive Design**: Mobile-first approach
+- **Dark/Light Mode**: CSS variable support
+- **Accessibility**: WCAG compliant components
+- **Loading States**: Smooth user experience
+- **Error Handling**: User-friendly error messages
 
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions:
+- Check existing issues on GitHub
+- Create new issue with detailed description
+- Contact development team
+
+---
+
+**Built with ❤️ for better workplace wellbeing**
