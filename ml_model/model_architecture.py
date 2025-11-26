@@ -1,5 +1,26 @@
 import torch.nn as nn
 from transformers import DistilBertForSequenceClassification
+<<<<<<< HEAD
+import warnings
+import logging
+
+# Suppress the specific warning
+warnings.filterwarnings("ignore", message="Some weights of.*were not initialized")
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
+class UltimateBurnoutClassifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        # Suppress warnings for this specific call
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            self.encoder = DistilBertForSequenceClassification.from_pretrained(
+                'distilbert-base-uncased',
+                num_labels=1,
+                ignore_mismatched_sizes=True
+            )
+=======
 import torch
 
 class UltimateBurnoutClassifier(nn.Module):
@@ -11,6 +32,7 @@ class UltimateBurnoutClassifier(nn.Module):
             num_labels=1,
             ignore_mismatched_sizes=True
         )
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47
         
         # Strategic freezing
         for name, param in self.encoder.named_parameters():
@@ -40,6 +62,9 @@ class UltimateBurnoutClassifier(nn.Module):
 
     def forward(self, input_ids, attention_mask):
         outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+<<<<<<< HEAD
+        return outputs.logits.squeeze()
+=======
         return outputs.logits.squeeze()
 
 class FocalLoss(nn.Module):
@@ -62,3 +87,4 @@ class FocalLoss(nn.Module):
             return focal_loss.sum()
         else:
             return focal_loss
+>>>>>>> 6f3ffefb422d0b370699f66f63b11dd4b23f4e47

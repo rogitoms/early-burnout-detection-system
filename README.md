@@ -93,12 +93,41 @@ npm run dev
 
 ### Environment Variables
 
-Create `.env` file in backend directory:
+#### Backend (.env)
+```env
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+DATABASE_URL=postgres://user:pass@localhost:5432/burnout_db
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# Hugging Face LLM recommendation service (free)
+HF_API_TOKEN=hf_your_free_token      # create at https://huggingface.co/settings/tokens
+HF_LLM_MODEL=tiiuae/falcon-7b-instruct
+HF_TEMPERATURE=0.4
+HF_MAX_NEW_TOKENS=650
+HF_TIMEOUT=60
+HF_PROVIDER=hf-inference
+```
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 EMAIL_HOST_PASSWORD=your_email_app_password
 ```
+
+### LLM-Powered Recommendations (Free)
+When a chat assessment is completed, the backend now:
+- Aggregates answers to the five burnout questions.
+- Sends them to the free Hugging Face Inference API via `ml_model/llm_api_recommender.py` (default model `tiiuae/falcon-7b-instruct`, override with any other publicly accessible checkpoint if desired).
+- Receives a JSON payload with burnout level, summary, confidence, and five structured recommendations.
+- Falls back to baseline template guidance only if the hosted API is temporarily unavailable (no local model required).
+
+To test locally:
+1. Create a free Hugging Face access token and add it to `.env` as `HF_API_TOKEN`.
+2. Install backend deps: `pip install -r requirements.txt`.
+3. Run the Django server and complete a chat assessment—the response includes `llm_recommendations` sourced from the Hugging Face model.
 
 ## Project Structure
 

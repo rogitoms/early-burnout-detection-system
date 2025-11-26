@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'corsheaders',
     # Local app
     'api',
+    'chatbot',      
+    'ml_model',
 ]
 
 MIDDLEWARE = [
@@ -66,13 +68,50 @@ EMAIL_HOST_USER = 'meriesara0000@gmail.com'
 EMAIL_HOST_PASSWORD = 'kryn hnru tivv chgx'
 EMAIL_USE_TLS = True
 
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ]
+}
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Common React port
     "http://localhost:5173",  # Vite default port
     "http://127.0.0.1:8000",
 ]
 
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True 
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
@@ -88,7 +127,10 @@ CSRF_USE_SESSIONS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
+
+
 # Add session settings for authentication
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
